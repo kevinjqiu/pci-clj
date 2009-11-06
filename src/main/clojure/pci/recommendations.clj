@@ -116,5 +116,6 @@
   "Gets recommendations for a person
   by using a weighted average of every other user's rankings"
   [prefs, person, sim-fn]
-  (filter #(> (second %) 0) (for [other (disj (key-set prefs) person)] (person (sim-fn prefs, person other)))))
+  (let [sim (filter #(> (second %) 0) (for [other (disj (key-set prefs) person)] (person (sim-fn prefs, person other)))))]
+    ())
 
