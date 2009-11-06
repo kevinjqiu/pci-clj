@@ -1,11 +1,16 @@
 (ns pci.pci
 	(:use clojure.set pci.recommendations))
 
+(defn key-set
+	"Return the keyset of a map"
+	[param]
+	(set (keys param)))
+
 (defn shared-items
 	[prefs person1 person2]
 	(intersection
- 		(set (keys (get prefs person1)))
-		(set (keys (get prefs person2)))))
+ 		(key-set (get prefs person1))
+		(key-set (get prefs person2))))
 
 (defn sum-of-squares
 	[prefs shared-items person1 person2]
