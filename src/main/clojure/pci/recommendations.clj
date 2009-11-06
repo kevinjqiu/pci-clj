@@ -101,3 +101,13 @@
     (if (empty? si)
       0
       (/ n (Math/sqrt (* (den (sum-sq p1) (sum p1)) (den (sum-sq p2) (sum p2))))))))
+
+
+(defn top-matches
+  "Returns the best matches for person from the prefs dictionary.
+  Number of results and similarity function are optional params"
+  [prefs, person, n, sim-fn]
+  (take n (reverse (sort-by #(:score %) (for [other (disj (key-set prefs) person)]
+    (struct-map similarity :person1 person :person2 other :score (sim-fn prefs person other)))))))
+
+
