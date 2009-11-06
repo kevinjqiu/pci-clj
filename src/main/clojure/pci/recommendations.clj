@@ -106,8 +106,15 @@
 (defn top-matches
   "Returns the best matches for person from the prefs dictionary.
   Number of results and similarity function are optional params"
-  [prefs, person, n, sim-fn]
-  (take n (reverse (sort-by #(:score %) (for [other (disj (key-set prefs) person)]
+  ([prefs, person, n, sim-fn]
+    (take n (reverse (sort-by #(:score %) (for [other (disj (key-set prefs) person)]
     (struct-map similarity :person1 person :person2 other :score (sim-fn prefs person other)))))))
+  ([prefs, person]
+    (top-matches prefs, person, 5, sim-pearson)))
 
+(defn get-recommendations
+  "Gets recommendations for a person
+  by using a weighted average of every other user's rankings"
+  [prefs, person, sim-fn]
+  (filter #(> (second %) 0) (for [other (disj (key-set prefs) person)] (person (sim-fn prefs, person other)))))
 
