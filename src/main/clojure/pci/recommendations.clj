@@ -56,6 +56,8 @@
 
 (defstruct similarity :person1 :person2 :score)
 
+(defstruct recommendation :item :score)
+
 (defn- key-set
   "Return the keyset of a map"
   [param]
@@ -112,10 +114,33 @@
   ([prefs, person]
     (top-matches prefs, person, 5, sim-pearson)))
 
+(defn- films-seen
+  [prefs person]
+  (key-set (get prefs person)))
+
+(defn- yet-to-see
+  "Returns the films yet to be seen by me"
+  [prefs other me]
+  (disj (films-seen prefs other) (films-seen prefs me)))
+
+(defn- collect
+  "Return a map of item:score from a list of item:score"
+  [a-list]
+  (let [helper (fn [ret a-list]
+                (if (empty? a-list)
+                  ret
+                  (let [item (first a-list)]
+                    (recur (merge-with #(sum %) ret (hash-map (first item) (second item))) (rest a-list)))))]
+    (helper (hash-map))))
+
+(defn- recommendation-score
+  "Returns the recommendation score for one person"
+  [prefs other me]
+  ())
+
 (defn get-recommendations
   "Gets recommendations for a person
   by using a weighted average of every other user's rankings"
   [prefs, person, sim-fn]
   (let [sim (filter #(> (second %) 0) (for [other (disj (key-set prefs) person)] (person (sim-fn prefs, person other)))))]
     ())
-
