@@ -123,24 +123,36 @@
   [prefs other me]
   (disj (films-seen prefs other) (films-seen prefs me)))
 
-(defn- collect
-  "Return a map of item:score from a list of item:score"
-  [a-list]
-  (let [helper (fn [ret a-list]
-                (if (empty? a-list)
-                  ret
-                  (let [item (first a-list)]
-                    (recur (merge-with #(sum %) ret (hash-map (first item) (second item))) (rest a-list)))))]
-    (helper (hash-map))))
+(defn-
+  #^{:test (fn[]
+              (assert (= (hash-map "Matthew" 1.5 "Mark" 1.0 "Luke" 2.0)
+                         (collect [["Matthew" 1.5] ["Mark" 1.0] ["Luke" 2.0]])))
+              (assert (= (hash-map "Matthew" 3.5 "Mark" 1.0 "Luke" 2.0)
+                         (collect [["Matthew" 1.5] ["Mark" 1.0] ["Luke" 2.0] ["Matthew" 2.0]]))))}
+  collect
+  "Return a map of item:score from a list of (item,score)"
+  [coll]
+  (let [add-to-map (fn [the-map the-item]
+                     (let [the-key (first the-item), the-val (last the-item)]
+                       (if (contains? the-map the-key)
+                         (assoc the-map the-key (+ (get the-map the-key) the-val))
+                         (assoc the-map the-key the-val)))),
+        helper (fn [ret-map lst]
+                 (if (empty? lst)
+                   ret-map
+                   (recur (add-to-map ret-map (first lst)) (rest lst))))]
+    (helper (hash-map) coll)))
 
-(defn- recommendation-score
-  "Returns the recommendation score for one person"
-  [prefs other me]
-  ())
+(defn recommendation-list
+  [prefs me sim-fn]
+  (for [other (disj (key-set prefs) me)]
+    (let [score (get (sim-fn prefs me other) me)
+          films (yet-to-see prefs other me)]
+      (for [film films] (list film (* ((get prefs other) film) score))))))
 
 (defn get-recommendations
   "Gets recommendations for a person
   by using a weighted average of every other user's rankings"
   [prefs, person, sim-fn]
-  (let [sim (filter #(> (second %) 0) (for [other (disj (key-set prefs) person)] (person (sim-fn prefs, person other)))))]
-    ())
+  nil)
+
