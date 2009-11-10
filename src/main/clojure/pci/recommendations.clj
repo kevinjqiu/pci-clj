@@ -13,6 +13,11 @@
   [prefs]
   (set (keys prefs)))
 
+(defn other-critics
+  "Return a set of critics in prefs other than me"
+  [prefs me]
+  (disj (critics prefs) me))
+
 (defn films
   "Return a set of films reviewed by the critic"
   [prefs critic]
@@ -30,6 +35,9 @@
     (critics (get prefs person1))
     (critics (get prefs person2))))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Euclidean Distance Score
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defn- sum-of-square-diffs
   [prefs si p1 p2]
   (apply +
@@ -45,16 +53,19 @@
       (let [sos (sum-of-square-diffs prefs si p1 p2)]
         (/ 1 (+ 1 sos))))))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Pearson Correlation Score
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defn sim-pearson
   "Returns the Pearson correlation coefficient for p1 and p2"
   [prefs p1 p2]
   (let [si (shared-items prefs p1 p2)
         size (count si)
         sum #(apply + (for [item si] (score prefs % item)))
-        sum-sq #(apply + (for [item si] (Math/pow (score prefs % item) 2)))
+        sum-sq #(apply + (for [item si] (square (score prefs % item))))
         pSum (apply + (for [item si] (* (score prefs p1 item) (score prefs p2 item))))
         n (- pSum (/ (* (sum p1) (sum p2)) size))
-        den #(- %1 (/ (Math/pow %2 2) size))]
+        den #(- %1 (/ (square %2) size))]
 
     (if (empty? si)
       0
@@ -65,8 +76,10 @@
   "Returns the best matches for person from the prefs dictionary.
   Number of results and similarity function are optional params"
   ([prefs, person, n, sim-fn]
-    (take n (reverse (sort-by #(:score %) (for [other (disj (critics prefs) person)]
-    (struct-map similarity :person1 person :person2 other :score (sim-fn prefs person other)))))))
+    (take n (reverse
+              (sort-by #(:score %)
+                (for [other (other-critics prefs person)]
+                     (struct-map similarity :person1 person :person2 other :score (sim-fn prefs person other)))))))
   ([prefs, person]
     (top-matches prefs, person, 5, sim-pearson)))
 

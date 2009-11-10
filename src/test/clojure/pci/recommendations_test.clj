@@ -53,7 +53,7 @@
     (hash-map
       "Snakes on a Plane" 4.5
       "You, Me and Dupree" 1.0
-      "The Night Listener" 4.0)))
+      "Superman Returns" 4.0)))
 
 ;(def key-set @#'pci.recommendations/key-set)
 
@@ -79,16 +79,43 @@
   (is
     (= 3.0 (score prefs "Mick LaSalle" "Superman Returns"))))
 
+(deftest test-get-other-critics
+  (is
+    (= #{"Lisa Rose" "Gene Seymour" "Michael Phillips" "Claudia Puig" "Mick LaSalle" "Jack Matthews"} (other-critics prefs "Toby")))
+  (is
+    (= #{"Lisa Rose" "Gene Seymour" "Claudia Puig" "Mick LaSalle" "Jack Matthews" "Toby"} (other-critics prefs "Michael Phillips"))))
 
 (deftest test-shared-items
   (is
     (= #{"Lady in the Water" "Snakes on a Plane" "Just My Luck" "Superman Returns" "You, Me and Dupree" "The Night Listener"} (shared-items prefs "Lisa Rose" "Gene Seymour")))
   (is
-    (= #{"Snakes on a Plane" "You, Me and Dupree" "The Night Listener"} (shared-items prefs "Lisa Rose" "Toby"))))
+    (= #{"Snakes on a Plane" "You, Me and Dupree" "Superman Returns"} (shared-items prefs "Lisa Rose" "Toby"))))
 
 (deftest test-sim-distances
   (is
-    (almost? 0.148148148 (sim-distance prefs "Lisa Rose" "Gene Seymour") 9)))
+    (almost? 0.148148148 (sim-distance prefs "Lisa Rose" "Gene Seymour"))))
+
+
+(deftest test-sim-pearson
+  (is
+    (almost? 0.396059017191 (sim-pearson prefs "Lisa Rose" "Gene Seymour")))
+  (is
+    (almost? 0.991240707 (sim-pearson prefs "Lisa Rose" "Toby")))
+  (is
+    (almost? 0.924473451 (sim-pearson prefs "Mick LaSalle" "Toby")))
+  (is
+    (almost? 0.893405147 (sim-pearson prefs "Claudia Puig" "Toby"))))
+
+(deftest test-top-matches
+  (let [tm (top-matches prefs "Toby" 3 sim-pearson)]
+    (is (= 3 (count tm)))
+    (let [m1 (first tm) m2 (second tm) m3 (last tm)]
+      (is (almost? 0.991240707 (:score m1)))
+      (is (= "Lisa Rose" (:person2 m1)))
+      (is (almost? 0.924473451 (:score m2)))
+      (is (= "Mick LaSalle" (:person2 m2)))
+      (is (almost? 0.893405147 (:score m3)))
+      (is (= "Claudia Puig" (:person2 m3))))))
 
 
 
