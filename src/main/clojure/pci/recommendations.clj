@@ -8,32 +8,37 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Convenience methods for getting data out of the prefs map
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defn critics
+(defn- critics
   "Return a set of critics in prefs"
   [prefs]
   (set (keys prefs)))
 
-(defn other-critics
+(defn- other-critics
   "Return a set of critics in prefs other than me"
   [prefs me]
   (disj (critics prefs) me))
 
-(defn films
+(defn- films
   "Return a set of films reviewed by the critic"
   [prefs critic]
   (set (keys (get prefs critic))))
 
-(defn score
+(defn- score
   "Return the score of the specified item for the specified person"
   [prefs person item]
   (get (get prefs person) item))
 
-(defn shared-items
+(defn- shared-items
   "Returns a set of items"
   [prefs person1 person2]
   (intersection
     (critics (get prefs person1))
     (critics (get prefs person2))))
+
+(defn- yet-to-score
+  "Returns the films yet to be scored by me"
+  [prefs other me]
+  (difference (films prefs other) (films prefs me)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Euclidean Distance Score
@@ -71,7 +76,9 @@
       0
       (/ n (Math/sqrt (* (den (sum-sq p1) (sum p1)) (den (sum-sq p2) (sum p2))))))))
 
-
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Ranking critics
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defn top-matches
   "Returns the best matches for person from the prefs dictionary.
   Number of results and similarity function are optional params"
@@ -83,14 +90,6 @@
   ([prefs, person]
     (top-matches prefs, person, 5, sim-pearson)))
 
-(defn- films-seen
-  [prefs person]
-  (critics (get prefs person)))
-
-(defn- yet-to-see
-  "Returns the films yet to be seen by me"
-  [prefs other me]
-  (disj (films-seen prefs other) (films-seen prefs me)))
 
 (defn-
   #^{:test (fn[]
@@ -116,7 +115,7 @@
   [prefs me sim-fn]
   (for [other (disj (critics prefs) me)]
     (let [score (get (sim-fn prefs me other) me)
-          films (yet-to-see prefs other me)]
+          films (yet-to-score prefs other me)]
       (for [film films] (list film (* ((get prefs other) film) score))))))
 
 (defn get-recommendations

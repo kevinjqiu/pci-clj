@@ -55,7 +55,12 @@
       "You, Me and Dupree" 1.0
       "Superman Returns" 4.0)))
 
-;(def key-set @#'pci.recommendations/key-set)
+(def critics @#'pci.recommendations/critics)
+(def other-critics @#'pci.recommendations/other-critics)
+(def films @#'pci.recommendations/films)
+(def score @#'pci.recommendations/score)
+(def shared-items @#'pci.recommendations/shared-items)
+(def yet-to-score @#'pci.recommendations/yet-to-score)
 
 (deftest test-key-set
   (is
@@ -91,10 +96,16 @@
   (is
     (= #{"Snakes on a Plane" "You, Me and Dupree" "Superman Returns"} (shared-items prefs "Lisa Rose" "Toby"))))
 
+(deftest test-yet-to-score
+  (is
+    (= #{"Lady in the Water" "Just My Luck" "The Night Listener"} (yet-to-score prefs "Lisa Rose" "Toby")))
+  (is
+    (= #{} (yet-to-score prefs "Toby" "Lisa Rose"))))
+
+
 (deftest test-sim-distances
   (is
     (almost? 0.148148148 (sim-distance prefs "Lisa Rose" "Gene Seymour"))))
-
 
 (deftest test-sim-pearson
   (is
@@ -116,8 +127,4 @@
       (is (= "Mick LaSalle" (:person2 m2)))
       (is (almost? 0.893405147 (:score m3)))
       (is (= "Claudia Puig" (:person2 m3))))))
-
-
-
-(run-tests)
 
