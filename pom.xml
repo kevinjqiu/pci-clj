@@ -12,7 +12,7 @@
         <artifactId>clojure-maven-plugin</artifactId>
         <version>1.2-SNAPSHOT</version>
         <configuration>
-          <testScript>src/test/clojure/pci/recommendations_test.clj</testScript>
+          <testScript>src/test/clojure/pci/test.clj</testScript>
         </configuration>
       </plugin>
     </plugins>

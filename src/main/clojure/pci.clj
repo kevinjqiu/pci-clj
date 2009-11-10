@@ -5,4 +5,6 @@
   []
 ;    (doseq [item (top-matches critics "Toby" 2 sim-pearson)]
 ;            (println item)))
-  (recommendation-list critics "Toby" sim-pearson))
+;  (recommendation-list critics "Toby" sim-pearson))
+  nil)
+
