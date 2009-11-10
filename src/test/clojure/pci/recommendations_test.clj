@@ -1,5 +1,6 @@
 (ns pci.recommendations-test
   (:use clojure.test
+        ;clojure.inspector
         pci.recommendations
         pci.util))
 
@@ -61,7 +62,8 @@
 (def score @#'pci.recommendations/score)
 (def shared-items @#'pci.recommendations/shared-items)
 (def yet-to-score @#'pci.recommendations/yet-to-score)
-(def collect @#'pci.recommendations/collect)
+(def all-films @#'pci.recommendations/all-films)
+(def recommendation-score @#'pci.recommendations/recommendation-score)
 
 (deftest test-key-set
   (is
@@ -99,9 +101,9 @@
 
 (deftest test-yet-to-score
   (is
-    (= #{"Lady in the Water" "Just My Luck" "The Night Listener"} (yet-to-score prefs "Lisa Rose" "Toby")))
+    (= #{"Lady in the Water" "Just My Luck" "The Night Listener"} (yet-to-score prefs "Toby")))
   (is
-    (= #{} (yet-to-score prefs "Toby" "Lisa Rose"))))
+    (= #{} (yet-to-score prefs "Lisa Rose"))))
 
 
 (deftest test-sim-distances
@@ -116,7 +118,17 @@
   (is
     (almost? 0.924473451 (sim-pearson prefs "Mick LaSalle" "Toby")))
   (is
-    (almost? 0.893405147 (sim-pearson prefs "Claudia Puig" "Toby"))))
+    (almost? 0.893405147 (sim-pearson prefs "Claudia Puig" "Toby")))
+  (is
+    (almost? 0.38 (sim-pearson prefs "Gene Seymour" "Toby") 0.01))
+  (is
+    (almost? 0.92 (sim-pearson prefs "Mick LaSalle" "Toby") 0.01))
+  (is
+    (almost? 0.66 (sim-pearson prefs "Jack Matthews" "Toby") 0.01)))
+
+(deftest test-all-films
+  (is
+    (= #{"Lady in the Water" "Snakes on a Plane" "Just My Luck" "Superman Returns" "You, Me and Dupree" "The Night Listener"} (all-films prefs))))
 
 (deftest test-top-matches
   (let [tm (top-matches prefs "Toby" 3 sim-pearson)]
@@ -134,9 +146,12 @@
         item1 (first rec)
         item2 (second rec)
         item3 (first (rest (rest rec)))]
-    (is (almost? 3.347789526 (last item1)))
+    (is (almost? 3.119201586 (last item1)))
     (is (= "The Night Listener" (first item1)))
-    (is (almost? 2.832544991 (last item2)))
+    (is (almost? 3.002234730 (last item2)))
     (is (= "Lady in the Water" (first item2)))
     (is (almost? 2.530980737 (last item3)))
     (is (= "Just My Luck" (first item3)))))
+
+(deftest test-recommendation-score
+  (is (almost? 3.11 (recommendation-score prefs "Toby" "The Night Listener" sim-pearson) 0.01)))

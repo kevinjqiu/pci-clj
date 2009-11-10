@@ -15,5 +15,11 @@
   ([x y]
     (almost? x y 0.00001)))
 
+(defn pnr
+  "Short for Print-n-Return"
+  [x]
+  (println x)
+  x)
+
 
 
