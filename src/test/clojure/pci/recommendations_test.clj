@@ -61,6 +61,7 @@
 (def score @#'pci.recommendations/score)
 (def shared-items @#'pci.recommendations/shared-items)
 (def yet-to-score @#'pci.recommendations/yet-to-score)
+(def collect @#'pci.recommendations/collect)
 
 (deftest test-key-set
   (is
@@ -128,3 +129,10 @@
       (is (almost? 0.893405147 (:score m3)))
       (is (= "Claudia Puig" (:person2 m3))))))
 
+(deftest test-collect
+  (is
+    (= (hash-map "Matthew" 1.5 "Mark" 1.0 "Luke" 2.0)
+       (collect [["Matthew" 1.5] ["Mark" 1.0] ["Luke" 2.0]])))
+  (is
+    (= (hash-map "Matthew" 3.5 "Mark" 1.0 "Luke" 2.0)
+       (collect [["Matthew" 1.5] ["Mark" 1.0] ["Luke" 2.0] ["Matthew" 2.0]]))))
