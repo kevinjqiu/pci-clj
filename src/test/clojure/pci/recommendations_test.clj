@@ -129,10 +129,14 @@
       (is (almost? 0.893405147 (:score m3)))
       (is (= "Claudia Puig" (:person2 m3))))))
 
-(deftest test-collect
-  (is
-    (= (hash-map "Matthew" 1.5 "Mark" 1.0 "Luke" 2.0)
-       (collect [["Matthew" 1.5] ["Mark" 1.0] ["Luke" 2.0]])))
-  (is
-    (= (hash-map "Matthew" 3.5 "Mark" 1.0 "Luke" 2.0)
-       (collect [["Matthew" 1.5] ["Mark" 1.0] ["Luke" 2.0] ["Matthew" 2.0]]))))
+(deftest test-get-recommendations-for-toby
+  (let [rec (recommendations prefs "Toby" sim-pearson)
+        item1 (first rec)
+        item2 (second rec)
+        item3 (first (rest (rest rec)))]
+    (is (almost? 3.347789526 (last item1)))
+    (is (= "The Night Listener" (first item1)))
+    (is (almost? 2.832544991 (last item2)))
+    (is (= "Lady in the Water" (first item2)))
+    (is (almost? 2.530980737 (last item3)))
+    (is (= "Just My Luck" (first item3)))))

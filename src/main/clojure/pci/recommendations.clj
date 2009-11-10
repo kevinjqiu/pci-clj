@@ -1,5 +1,5 @@
 (ns pci.recommendations
-  (:use clojure.set pci.util))
+  (:use clojure.set clojure.inspector pci.util))
 
 (defstruct similarity :person1 :person2 :score)
 
@@ -90,37 +90,40 @@
   ([prefs, person]
     (top-matches prefs, person, 5, sim-pearson)))
 
-
-(defn-
-  #^{:test (fn[]
-              (assert (= (hash-map "Matthew" 1.5 "Mark" 1.0 "Luke" 2.0)
-                         (collect [["Matthew" 1.5] ["Mark" 1.0] ["Luke" 2.0]])))
-              (assert (= (hash-map "Matthew" 3.5 "Mark" 1.0 "Luke" 2.0)
-                         (collect [["Matthew" 1.5] ["Mark" 1.0] ["Luke" 2.0] ["Matthew" 2.0]]))))}
-  collect
-  "Return a map of item:score from a list of (item,score)"
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Get recommendations
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defn- collect
+  "Return a map of film:(total,sim) from a list of (film,total,sim)"
   [coll]
   (let [add-to-map (fn [the-map the-item]
-                     (let [the-key (first the-item), the-val (last the-item)]
-                       (if (contains? the-map the-key)
-                         (assoc the-map the-key (+ (get the-map the-key) the-val))
-                         (assoc the-map the-key the-val)))),
+                     (let [film (first the-item) total (second the-item) sim (last the-item)]
+                       (if (contains? the-map film)
+                         (let [prev-total (first (get the-map film)) prev-sim (last (get the-map film))]
+                           (assoc the-map film (list (+ total prev-total) (+ sim prev-sim))))
+                         (assoc the-map film (list total sim)))))
         helper (fn [ret-map lst]
                  (if (empty? lst)
                    ret-map
                    (recur (add-to-map ret-map (first lst)) (rest lst))))]
     (helper (hash-map) coll)))
 
-(defn recommendation-list
+(defn- recommendation-list
   [prefs me sim-fn]
-  (for [other (disj (critics prefs) me)]
-    (let [score (get (sim-fn prefs me other) me)
-          films (yet-to-score prefs other me)]
-      (for [film films] (list film (* ((get prefs other) film) score))))))
+  (let [flatten (fn [ret lst] (if (empty? lst) ret (recur (concat ret (first lst)) (rest lst))))]
+    (flatten '() (for [other (other-critics prefs me)]
+      (let [sim (sim-fn prefs me other) films (yet-to-score prefs other me)]
+        (for [film films] (list film (* ((get prefs other) film) sim) sim)))))))
 
-(defn get-recommendations
+
+
+(defn recommendations
   "Gets recommendations for a person
   by using a weighted average of every other user's rankings"
   [prefs, person, sim-fn]
-  nil)
-
+  (let [calc-score (fn [ret-map rec-map]
+                     (if (empty? rec-map)
+                      ret-map
+                      (let [item (first rec-map) k (key item) v (val item) total (first v) sim (last v)]
+                        (recur (assoc ret-map k (/ total sim)) (rest rec-map)))))]
+  (reverse (sort-by #(val %) (calc-score (hash-map) (collect (recommendation-list prefs person sim-fn)))))))
