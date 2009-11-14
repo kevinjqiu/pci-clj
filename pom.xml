@@ -30,6 +30,7 @@
                 <artifactId>clojure-maven-plugin</artifactId>
                 <version>1.2-SNAPSHOT</version>
                 <configuration>
+                    <script>src/main/clojure/pci.clj</script>
                     <testScript>src/test/clojure/pci/test.clj</testScript>
                 </configuration>
             </plugin>
@@ -51,6 +52,11 @@
             <groupId>jline</groupId>
             <artifactId>jline</artifactId>
             <version>0.9.94</version>
+        </dependency>
+        <dependency>
+          <groupId>rome</groupId>
+          <artifactId>rome</artifactId>
+          <version>0.9</version>
         </dependency>
     </dependencies>
 </project>
