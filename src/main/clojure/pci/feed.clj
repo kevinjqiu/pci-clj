@@ -33,3 +33,35 @@
   (try
     (get-word-counts-helper {} (.getEntries (parse-url url)))
     (catch Exception e (println (.toString e)))))
+
+
+(defn aggregate
+  "Sequential aggregate"
+  [feeds wc]
+  (if (empty? feeds)
+    wc
+    (recur (rest feeds) (merge-with + wc (get-word-counts (first feeds))))))
+
+(defn- spawn-agents
+  [feeds agents]
+  (if (empty? feeds)
+    agents
+    (let [agt (agent {})
+          feed (first feeds)]
+      (recur
+        (rest feeds)
+        (conj
+          agents
+          (send agt (fn [agent-state] (get-word-counts feed))))))))
+
+
+(defn agent-aggregate
+  "Aggregate using agents"
+  [feeds wc]
+  (let [agents (spawn-agents feeds '())]
+    (apply await agents)
+    (loop [rest-agents agents ret {}]
+      (if (empty? rest-agents)
+        ret
+        (recur (rest rest-agents) (merge-with + ret @(first rest-agents)))))))
+
