@@ -32,4 +32,4 @@
   (println "analyzing: " url)
   (try
     (get-word-counts-helper {} (.getEntries (parse-url url)))
-    (catch FileNotFoundException e (println "FileNotFound:" (.getMessage e)))))
+    (catch Exception e (println (.toString e)))))
