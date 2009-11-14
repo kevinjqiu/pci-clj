@@ -37,10 +37,12 @@
 
 (defn aggregate
   "Sequential aggregate"
-  [feeds wc]
-  (if (empty? feeds)
-    wc
-    (recur (rest feeds) (merge-with + wc (get-word-counts (first feeds))))))
+  [feeds]
+  (letfn [(helper [feeds wc]
+            (if (empty? feeds)
+              wc
+              (recur (rest feeds) (merge-with + wc (get-word-counts (first feeds))))))]
+    (helper feeds {})))
 
 (defn- spawn-agents
   [feeds agents]
@@ -57,11 +59,12 @@
 
 (defn agent-aggregate
   "Aggregate using agents"
-  [feeds wc]
+  [feeds]
   (let [agents (spawn-agents feeds '())]
     (apply await agents)
-    (loop [rest-agents agents ret {}]
-      (if (empty? rest-agents)
-        ret
-        (recur (rest rest-agents) (merge-with + ret @(first rest-agents)))))))
+    (reduce #(merge-with + %1 %2) (map deref agents))))
+;    (loop [rest-agents agents ret {}]
+;      (if (empty? rest-agents)
+;        ret
+;        (recur (rest rest-agents) (merge-with + ret @(first rest-agents)))))))
 
