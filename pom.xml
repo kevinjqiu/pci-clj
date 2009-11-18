@@ -52,5 +52,10 @@
             <artifactId>jline</artifactId>
             <version>0.9.94</version>
         </dependency>
+        <dependency>
+        	<groupId>rome</groupId>
+        	<artifactId>rome</artifactId>
+        	<version>1.0</version>
+        </dependency>
     </dependencies>
 </project>
