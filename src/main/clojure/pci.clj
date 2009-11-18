@@ -1,10 +1,14 @@
 (ns pci
-    (:use clojure.set pci.recommendations))
+    (:use clojure.set
+          clojure.contrib.duck-streams
+          pci.recommendations
+          pci.feed)
+    (:gen-class))
 
-(defn main
-  []
-;    (doseq [item (top-matches critics "Toby" 2 sim-pearson)]
-;            (println item)))
-;  (recommendation-list critics "Toby" sim-pearson))
-  nil)
+;(defn -main
+;  []
+;  (println (get-word-counts "http://feeds.feedburner.com/37signals/beMH")))
 
+(def feeds (line-seq (reader "feedlist.txt")))
+
+(println (aggregate (take 5 feeds)))
