@@ -13,4 +13,4 @@
 (def feeds (line-seq (reader "feedlist.txt")))
 
 ;(inspect (fetch-word-counts (take 5 feeds)))
-(inspect (create-feed-map (take 5 feeds)))
+(inspect (create-feed-map-struct (take 5 feeds)))

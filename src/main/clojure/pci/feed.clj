@@ -1,5 +1,5 @@
 (ns pci.feed
-  (:use rome clojure.set)
+  (:use rome clojure.set clojure.inspector)
   (:import (java.io FileNotFoundException)))
 
 
@@ -8,7 +8,7 @@
   (let [word-list (.split #"[^A-Z^a-z]+" (.replaceAll html-str "<[^>]+>" ""))]
     (map (memfn toLowerCase) (filter #(not (empty? %)) word-list))))
 
-(defn count-words
+(defn- count-words
   [wc words]
   (if (empty? words)
     wc
@@ -26,7 +26,7 @@
                          "" (.. entry getDescription getValue))))]
       (recur (count-words wc words) (rest entries)))))
 
-(defn get-word-counts
+(defn- get-word-counts
   "Returns the title and dictionary of word counts for an RSS feed"
   [url]
   (println "analyzing: " url)
@@ -50,7 +50,7 @@
         (conj agents (create-agent feed))))))
 
 
-(defn fetch-word-counts
+(defn- fetch-word-counts
   "Fetch the word-count map for each of the feeds."
   [feeds]
   (let [agents (spawn-agents feeds '())]
@@ -59,11 +59,38 @@
 
 (defstruct feed-map :words :feed-map)
 
-(defn create-feed-map
+(defn- map-word-counts
+  "feed-word-count is a map entry"
+  [word-list feed-word-count retval]
+  (let [feed (first feed-word-count)
+        word-counts (last feed-word-count)]
+    (assoc
+      retval
+      feed
+      (map #(if (contains? word-counts %) (get word-counts %) 0) word-list))))
+
+(defn- create-feed-map
+  "feed-word-counts is a map of feed and its word count
+  the return is a map of feed and a list of counts
+  corresponding to word-list"
+  [word-list feed-word-counts]
+  (letfn [(helper [word-list interim-feed-word-counts retval]
+            (if (empty? interim-feed-word-counts)
+              retval
+              (recur word-list (rest interim-feed-word-counts) (map-word-counts word-list (first interim-feed-word-counts) retval))))]
+    (helper word-list feed-word-counts {})))
+
+(defn- set-to-list
+  "Is there a library function for this?"
+  [my-set]
+  (apply conj '() my-set))
+
+(defn create-feed-map-struct
   [feeds]
-  (let [word-map
-        (apply union (map #(set (keys (last %))) (fetch-word-counts feeds)))]
-    nil))
+  (let [feed-word-count (fetch-word-counts feeds)
+        word-list
+          (set-to-list
+            (apply union (map #(set (keys (last %))) feed-word-count)))]
 
-
+    (struct-map feed-map :words word-list :feed-map (create-feed-map word-list feed-word-count))))
 
