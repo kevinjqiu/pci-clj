@@ -45,26 +45,27 @@
     (helper feeds {})))
 
 (defn- spawn-agents
-  [feeds agents]
+  [feeds agents return]
   (if (empty? feeds)
     agents
     (let [agt (agent {})
           feed (first feeds)]
       (recur
         (rest feeds)
-        (conj
-          agents
-          (send agt (fn [agent-state] (get-word-counts feed))))))))
+        (conj agents (create-agent feed return))
+        return))))
 
+(defn create-agent
+  [feed ref-ret]
+  (send
+    (agent {})
+    (fn [] (dosync (alter ref-ret (merge-with + @ref-ret (get-word-counts feed)))))))
 
 (defn agent-aggregate
   "Aggregate using agents"
   [feeds]
-  (let [agents (spawn-agents feeds '())]
+  (let [return (ref {})]
+        agents (spawn-agents feeds '() return)]
     (apply await agents)
-    (reduce #(merge-with + %1 %2) (map deref agents))))
-;    (loop [rest-agents agents ret {}]
-;      (if (empty? rest-agents)
-;        ret
-;        (recur (rest rest-agents) (merge-with + ret @(first rest-agents)))))))
+    (@return)))
 

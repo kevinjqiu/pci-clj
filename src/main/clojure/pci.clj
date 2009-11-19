@@ -11,4 +11,4 @@
 
 (def feeds (line-seq (reader "feedlist.txt")))
 
-(println (aggregate (take 5 feeds)))
+(println (agent-aggregate (take 5 feeds)))
