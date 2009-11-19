@@ -34,38 +34,27 @@
     (get-word-counts-helper {} (.getEntries (parse-url url)))
     (catch Exception e (println (.toString e)))))
 
-
-(defn aggregate
-  "Sequential aggregate"
-  [feeds]
-  (letfn [(helper [feeds wc]
-            (if (empty? feeds)
-              wc
-              (recur (rest feeds) (merge-with + wc (get-word-counts (first feeds))))))]
-    (helper feeds {})))
+(defn- create-agent
+  [feed]
+  (send
+    (agent {feed, {}})
+    (fn [state] (assoc state feed (get-word-counts feed)))))
 
 (defn- spawn-agents
-  [feeds agents return]
+  [feeds agents]
   (if (empty? feeds)
     agents
     (let [agt (agent {})
           feed (first feeds)]
       (recur
         (rest feeds)
-        (conj agents (create-agent feed return))
-        return))))
+        (conj agents (create-agent feed))))))
 
-(defn create-agent
-  [feed ref-ret]
-  (send
-    (agent {})
-    (fn [] (dosync (alter ref-ret (merge-with + @ref-ret (get-word-counts feed)))))))
 
-(defn agent-aggregate
-  "Aggregate using agents"
+(defn fetch-word-counts
+  "Fetch the word-count map for each of the feeds."
   [feeds]
-  (let [return (ref {})]
-        agents (spawn-agents feeds '() return)]
+  (let [agents (spawn-agents feeds '())]
     (apply await agents)
-    (@return)))
+    (map deref agents)))
 

@@ -1,6 +1,7 @@
 (ns pci
     (:use clojure.set
           clojure.contrib.duck-streams
+          clojure.inspector
           pci.recommendations
           pci.feed)
     (:gen-class))
@@ -11,4 +12,4 @@
 
 (def feeds (line-seq (reader "feedlist.txt")))
 
-(println (agent-aggregate (take 5 feeds)))
+(inspect (fetch-word-counts (take 5 feeds)))
