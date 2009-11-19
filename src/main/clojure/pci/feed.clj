@@ -37,15 +37,14 @@
 (defn- create-agent
   [feed]
   (send
-    (agent {feed, {}})
-    (fn [state] (assoc state feed (get-word-counts feed)))))
+    (agent [feed])
+    (fn [state] (conj state (get-word-counts feed)))))
 
 (defn- spawn-agents
   [feeds agents]
   (if (empty? feeds)
     agents
-    (let [agt (agent {})
-          feed (first feeds)]
+    (let [feed (first feeds)]
       (recur
         (rest feeds)
         (conj agents (create-agent feed))))))
@@ -58,3 +57,9 @@
     (apply await agents)
     (map deref agents)))
 
+(defstruct feed-map :words :feed-map)
+
+;(defn create-feed-map
+;  [feeds]
+;  (let [feed-word-count (fetch-word-counts feeds)]
+;    (apply conj feed-word-count
