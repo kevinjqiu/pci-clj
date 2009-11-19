@@ -1,5 +1,5 @@
 (ns pci.feed
-  (:use rome)
+  (:use rome clojure.set)
   (:import (java.io FileNotFoundException)))
 
 
@@ -59,7 +59,11 @@
 
 (defstruct feed-map :words :feed-map)
 
-;(defn create-feed-map
-;  [feeds]
-;  (let [feed-word-count (fetch-word-counts feeds)]
-;    (apply conj feed-word-count
+(defn create-feed-map
+  [feeds]
+  (let [word-map
+        (apply union (map #(set (keys (last %))) (fetch-word-counts feeds)))]
+    nil))
+
+
+
