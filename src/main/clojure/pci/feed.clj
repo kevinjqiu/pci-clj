@@ -1,5 +1,5 @@
 (ns pci.feed
-  (:use rome clojure.set clojure.inspector)
+  (:use rome clojure.set clojure.inspector pci.bicluster)
   (:import (java.io FileNotFoundException)))
 
 
@@ -91,6 +91,23 @@
         word-list
           (set-to-list
             (apply union (map #(set (keys (last %))) feed-word-count)))]
-
     (struct-map feed-map :words word-list :feed-map (create-feed-map word-list feed-word-count))))
+
+(defn- create-init-clusters
+  "create a list of initial clusters from feeds"
+  [feed-map]
+  (for [feed-entry (:feed-map feed-map)]
+    (struct-map bicluster
+      :left nil
+      :right nil
+      :id (key feed-entry)
+      :vec (val feed-entry)
+      :distance 0)))
+
+(defn create-feed-cluster
+  "create a feed cluster from a feed word map (of type struct-map feed-map)"
+  [feed-map]
+  (create-init-clusters feed-map))
+
+
 

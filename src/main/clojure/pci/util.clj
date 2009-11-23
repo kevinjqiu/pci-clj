@@ -28,9 +28,9 @@
         sum1 (apply + v1) sum2 (apply + v2)
         sum1Sq (apply + (map * v1 v1)) sum2Sq (apply + (map * v2 v2))
         pSum (apply + (map * v1 v2))
-        num (- pSum (/ (* sum1 sum2) count(v1)))
+        n (- pSum (/ (* sum1 sum2) length))
         density (sqrt (* (- sum1Sq (/ (square sum1) length)) (- sum2Sq (/ (square sum2) length))))]
-    (if (zero? density) 0 (- 1.0 (/ num density)))))
+    (if (zero? density) 0 (- 1.0 (/ n density)))))
 
 
 
