@@ -1,5 +1,5 @@
 (ns pci.feed
-  (:use rome clojure.set clojure.inspector pci.bicluster)
+  (:use rome clojure.set clojure.inspector pci.bicluster pci.util)
   (:import (java.io FileNotFoundException)))
 
 
@@ -109,5 +109,14 @@
   [feed-map]
   (create-init-clusters feed-map))
 
-
-
+(defn cluster-distances
+  [cluster-list]
+  (loop [i 0 cluster-distances []]
+    (if (= i (count cluster-list))
+      cluster-distances
+      (recur
+        (inc i)
+        (conj
+          cluster-distances
+          (for [cluster1 (nth cluster-list i) cluster2 (rest (last (split-at i cluster-list)))]
+            [(pearson (:vec cluster1) (:vec cluster2)) [cluster1 cluster2]]))))))
