@@ -55,6 +55,7 @@
   [feeds]
   (let [agents (spawn-agents feeds '())]
     (apply await agents)
+    (shutdown-agents)
     (map deref agents)))
 
 (defstruct feed-map :words :feed-map)
@@ -110,13 +111,15 @@
   (create-init-clusters feed-map))
 
 (defn cluster-distances
+  "return a sorted map whose keys are the distance between the two clusters as their values"
   [cluster-list]
-  (loop [i 0 cluster-distances []]
-    (if (= i (count cluster-list))
-      cluster-distances
+  (sort (loop [i 0 retval []]
+    (if (= i (- (count cluster-list) 1))
+      retval
       (recur
         (inc i)
-        (conj
-          cluster-distances
-          (for [cluster1 (nth cluster-list i) cluster2 (rest (last (split-at i cluster-list)))]
-            [(pearson (:vec cluster1) (:vec cluster2)) [cluster1 cluster2]]))))))
+        (concat
+          retval
+          (let [rest-clusters (last (split-at i cluster-list)) cluster1 (first rest-clusters)]
+            (for [cluster2 (rest rest-clusters)]
+              [(pearson (:vec cluster1) (:vec cluster2)) [(:id cluster1) (:id cluster2)]]))))))))
