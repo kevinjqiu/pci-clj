@@ -21,6 +21,12 @@
   (println x)
   x)
 
+(defn take-out
+  "Take out the element from the collection at index idx"
+  [coll idx]
+  (let [splitted (split-at (- idx 1) coll)]
+    (concat (first splitted) (rest (last splitted)))))
+
 (defn pearson
   "Calculate the pearson similarity score for vector 1 and 2"
   [v1 v2]

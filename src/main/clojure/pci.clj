@@ -18,4 +18,5 @@
 
 ;(print (pearson [3 2 5 1] [5 1 7 8]))
 
-(inspect (cluster-distances (create-feed-cluster (create-feed-map-struct (take 5 feeds)))))
+;(inspect (cluster-distances (create-feed-cluster (create-feed-map-struct (take 5 feeds)))))
+(inspect-tree (create-feed-cluster (create-feed-map-struct (take 5feeds))))

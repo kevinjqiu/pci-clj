@@ -86,6 +86,21 @@
   [my-set]
   (apply conj '() my-set))
 
+(defn cluster-distances
+  "return a sorted map whose keys are the distance between the two clusters as their values.
+  XXX: alternatively, don't store the distance of every pair; just the lowest"
+  [cluster-list]
+  (sort (loop [i 0 retval []]
+    (if (= i (- (count cluster-list) 1))
+      retval
+      (recur
+        (inc i)
+        (concat
+          retval
+          (let [rest-clusters (last (split-at i cluster-list)) cluster1 (first rest-clusters) cluster2-range (rest rest-clusters)]
+            (for [cluster2-idx (range 0 (count cluster2-range))]
+              [(pearson (:vec cluster1) (:vec (nth cluster2-range cluster2-idx))) [i (+ 1 i cluster2-idx)]]))))))))
+
 (defn create-feed-map-struct
   [feeds]
   (let [feed-word-count (fetch-word-counts feeds)
@@ -105,21 +120,35 @@
       :vec (val feed-entry)
       :distance 0)))
 
+(defn- join-clusters
+  [cluster1 cluster2 distance]
+  (struct-map bicluster
+    :left cluster1
+    :right cluster2
+    :id (concat [(:id cluster1)] [(:id cluster2)])
+    :vec (map #(/ (+ %1 %2) 2) (:vec cluster1) (:vec cluster2))
+    :distance distance))
+
+(defn- dosomething
+  [cluster-list]
+  (let [lowest (first (cluster-distances cluster-list))
+        pair (last lowest)
+        distance (first lowest)
+        cluster1 (nth cluster-list (first pair))
+        cluster2 (nth cluster-list (last pair))]
+    ; create a new cluster based on the two clusters
+    (conj (take-out (take-out cluster-list (first pair)) (last pair)) (join-clusters cluster1 cluster2 distance))))
+
+(defn- create-feed-cluster-helper
+  "recursive body for create-feed-cluster"
+  [cluster-list]
+  (if (= (count cluster-list) 1)
+    (first cluster-list)
+    (recur (dosomething cluster-list))))
+
+
 (defn create-feed-cluster
   "create a feed cluster from a feed word map (of type struct-map feed-map)"
   [feed-map]
-  (create-init-clusters feed-map))
+  (create-feed-cluster-helper (create-init-clusters feed-map)))
 
-(defn cluster-distances
-  "return a sorted map whose keys are the distance between the two clusters as their values"
-  [cluster-list]
-  (sort (loop [i 0 retval []]
-    (if (= i (- (count cluster-list) 1))
-      retval
-      (recur
-        (inc i)
-        (concat
-          retval
-          (let [rest-clusters (last (split-at i cluster-list)) cluster1 (first rest-clusters)]
-            (for [cluster2 (rest rest-clusters)]
-              [(pearson (:vec cluster1) (:vec cluster2)) [(:id cluster1) (:id cluster2)]]))))))))
