@@ -129,7 +129,7 @@
     :vec (map #(/ (+ %1 %2) 2) (:vec cluster1) (:vec cluster2))
     :distance distance))
 
-(defn- dosomething
+(defn- clustering
   [cluster-list]
   (let [lowest (first (cluster-distances cluster-list))
         pair (last lowest)
@@ -144,7 +144,7 @@
   [cluster-list]
   (if (= (count cluster-list) 1)
     (first cluster-list)
-    (recur (dosomething cluster-list))))
+    (recur (clustering cluster-list))))
 
 
 (defn create-feed-cluster
