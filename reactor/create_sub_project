@@ -1,6 +1,6 @@
 mvn archetype:create \
      -DgroupId=pci \
-     -DartifactId=your-new-project-name \
+     -DartifactId=$1 \
      -DarchetypeGroupId=com.stuartsierra \
      -DarchetypeArtifactId=clojure-archetype \
      -DarchetypeVersion=1.0-SNAPSHOT

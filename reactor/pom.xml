@@ -41,5 +41,6 @@
   </repositories>
   <modules>
     <module>decisiontree</module>
+    <module>commons</module>
   </modules>
 </project>
