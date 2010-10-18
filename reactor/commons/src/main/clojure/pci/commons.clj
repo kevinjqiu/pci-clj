@@ -11,5 +11,5 @@
   Return a 2-tuple, whose first item is the collection of o's
   with (true? pred o), and the second (false? pred o)
   "
-  [(filter coll pred) (filter coll #(not pred %))]
+  [(filter pred coll) (filter #(not (pred %)) coll)]
 )
