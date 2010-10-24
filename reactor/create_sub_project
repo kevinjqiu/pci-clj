@@ -1,7 +1,0 @@
-mvn archetype:create \
-     -DgroupId=pci \
-     -DartifactId=$1 \
-     -DarchetypeGroupId=com.stuartsierra \
-     -DarchetypeArtifactId=clojure-archetype \
-     -DarchetypeVersion=1.0-SNAPSHOT
-
