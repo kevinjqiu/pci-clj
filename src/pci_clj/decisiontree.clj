@@ -40,7 +40,10 @@
         prob-fn #(/ (get result-counts %) total)]
     (apply + (map #(* (prob-fn (first %)) (prob-fn (last %))) perms))))
 
-
-
-
+(defn entropy [rows]
+  "Entropy is the amount of disorder in a set - how mixed a set is"
+  (let [result-counts (uniquecounts rows)
+        results (keys result-counts)
+        total (count rows)]
+    (- (apply + (map (fn [result] (let [p (/ (get result-counts result) total)] (* p (log2 p)))) results)))))
 

@@ -21,3 +21,6 @@
           (for [e1 coll e2 (remove #(= % e1) coll)]
            (list e1 e2))))
 
+(defn log2 [x]
+  (/ (Math/log x) (Math/log 2)))
+

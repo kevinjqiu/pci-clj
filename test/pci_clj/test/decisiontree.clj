@@ -77,5 +77,7 @@
 (deftest gini-impurity-test
   (is (= 0.6328125 (gini-impurity *test-data*))))
 
+(deftest entropy-test
+  (is (= 1.5052408149441479 (entropy *test-data*))))
 
 
