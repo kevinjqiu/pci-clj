@@ -36,10 +36,8 @@
   (let [total (count rows)
         result-counts (uniquecounts rows)
         results (keys result-counts)
-        perms (for [k1 results
-                    k2 (remove #(= % k1) results)]
-                      [k1 k2]) ; result permutations
-        prob-fn #(/ (get results %) total)]
+        perms (permutations results)
+        prob-fn #(/ (get result-counts %) total)]
     (apply + (map #(* (prob-fn (first %)) (prob-fn (last %))) perms))))
 
 

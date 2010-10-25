@@ -95,3 +95,24 @@
 	        (= [] (first result))
 			      (= ["abc" "def" "xyz" "blah"] (second result)))))
 
+(deftest permutations-empty-coll
+  (let [result (permutations [])]
+    (is
+      (= [] result))))
+
+(deftest permutations-one-elem
+  (let [result (permutations [1])]
+    (is (= [1] result))))
+
+(deftest permutations-two-elems
+  (let [result (permutations [1 2])]
+    (is (= '((1 2) (2 1)) result))))
+
+(deftest permutations-three-elems
+  (let [result (permutations [1 2 3])]
+    (is (= '((1 2) (1 3) (2 1) (2 3) (3 1) (3 2)) result))))
+
+(deftest permutations-different-types
+  (let [result (permutations [1 "a" 2.5])]
+    (is (= '((1 "a") (1 2.5) ("a" 2.5) ("a" 1) (2.5 1) (2.5 "a") result)))))
+

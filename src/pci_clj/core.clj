@@ -12,3 +12,12 @@
   with (true? pred obj) and the second (false? pred obj)"
   [(filter pred coll) (filter #(not (pred %)) coll)])
 
+(defn permutations [coll]
+  "Generate a collection of permutations of elements in coll.
+  The coll must be ordered (if it has to be a set, use ordered-set"
+  (cond (= (count coll) 0) '()
+        (= (count coll) 1) coll
+        :else
+          (for [e1 coll e2 (remove #(= % e1) coll)]
+           (list e1 e2))))
+
