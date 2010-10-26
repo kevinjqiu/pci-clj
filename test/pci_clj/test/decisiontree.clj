@@ -85,27 +85,20 @@
   (deftest empty-values
     (let [rows '()
           result (values-in-column rows 1)]
-      (is (= {} result))))
+      (is (= #{} result))))
   (deftest single-value
     (let [rows '(("a" 1 true))
           result (values-in-column rows 1)]
-      (is (= {1 1} result))))
+      (is (= #{1} result))))
   (deftest multi-value
     (let [rows '(("a" 1 true) ("b" 1 true) ("c" 2 false))
           result (values-in-column rows 1)]
-      (is (= (get result 1) 2))
-      (is (= (get result 2) 1)))))
+      (is (contains? result 1))
+      (is (contains? result 2)))))
 
 ;(use 'clojure.inspector)
 ;(deftest buildtree-test
 ;  (inspect-tree (buildtree *test-data* entropy)))
 
-(print (buildtree *test-data* gini-impurity))
-
-
-
-
-
-
-
+(print (buildtree *test-data* entropy))
 

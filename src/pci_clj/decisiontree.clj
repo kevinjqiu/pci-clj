@@ -48,22 +48,30 @@
     (- (apply + (map (fn [result] (let [p (/ (get result-counts result) total)] (* p (log2 p)))) results)))))
 
 (defn- values-in-column [rows col-idx]
-  "Return a map of value and its count at column ``col-idx``"
-  (reduce #(merge-with + %1 {%2 1}) {} (map #(nth % col-idx) rows)))
+  "Return a list of unique values in column ``col-idx``"
+  (set (map #(nth % col-idx) rows)))
 
 (defn- calculate-gain [current-score set1 set2 rows scoref]
   "Calculate the information gain of the subset over rows
   given the scoring function ``scoref``"
+  ;(println "score" current-score)
+  ;(println "set1" set1)
+  ;(println "set2" set2)
+  ;(println "rows" rows)
   (let [p (/ (count set1) (count rows))]
     (- current-score (* p (scoref set1)) (* (- 1 p) (scoref set2)))))
 
 (defn- best-gain-in-column-values [col-idx col-values rows current-best-gain scoref current-score]
   (cond (= (count col-values) 0) current-best-gain
-        :else (let [value (keys col-values)
+        :else (let [value (first col-values) 
                    dividedset (divideset rows col-idx value)
                    set1 (first dividedset)
                    set2 (last dividedset)
                    gain-val (calculate-gain current-score set1 set2 rows scoref)]
+                ;(println "rows:" rows)
+                ;(println "col-idx:" col-idx)
+                (println "value:" value)
+                (println "gain-val:" gain-val)
                 (if (and (> gain-val (:value current-best-gain)) (not (empty? set1)) (not (empty? set2)))
                   (recur col-idx (rest col-values) rows (struct-map gain :value gain-val :criteria '(col-idx value) :sets '(set1 set2)) scoref current-score)
                   (recur col-idx (rest col-values) rows current-best-gain scoref current-score)))))
@@ -74,6 +82,7 @@
         :else (let [col-idx (first col-idxs)
                    col-values (values-in-column rows col-idx)
                    best-gain (best-gain-in-column-values col-idx col-values rows current-best-gain scoref current-score)]
+                (println "best-gain:" best-gain)
                 (if (> (:value best-gain) (:value current-best-gain))
                   (recur (rest col-idxs) rows scoref best-gain current-score)
                   (recur (rest col-idxs) rows scoref current-best-gain current-score)))))
