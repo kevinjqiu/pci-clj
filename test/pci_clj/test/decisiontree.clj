@@ -1,5 +1,6 @@
 (ns pci-clj.test.decisiontree
   (:use [pci-clj.decisiontree] :reload)
+  (:use [pci-clj.core])
   (:use [clojure.test]))
 
 (def *test-data* [["slashdot" "USA" "yes" 18 "None"] 
@@ -79,5 +80,26 @@
 
 (deftest entropy-test
   (is (= 1.5052408149441479 (entropy *test-data*))))
+
+(with-private-fns [pci-clj.decisiontree [values-in-column]]
+  (deftest empty-values
+    (let [rows '()
+          result (values-in-column rows 1)]
+      (is (= {} result))))
+  (deftest single-value
+    (let [rows '(("a" 1 true))
+          result (values-in-column rows 1)]
+      (is (= {1 1} result))))
+  (deftest multi-value
+    (let [rows '(("a" 1 true) ("b" 1 true) ("c" 2 false))
+          result (values-in-column rows 1)]
+      (is (= (get result 1) 2))
+      (is (= (get result 2) 1)))))
+
+      
+
+
+
+
 
 

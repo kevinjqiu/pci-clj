@@ -3,6 +3,7 @@
 
 (defstruct criterion :column :value)
 (defstruct tree-node :criterion :results :tb :fb)
+(defstruct gain :value :criteria :sets)
 
 (defn divideset [rows column target-value]
   "Divides a set on a specific column.
@@ -46,4 +47,30 @@
         results (keys result-counts)
         total (count rows)]
     (- (apply + (map (fn [result] (let [p (/ (get result-counts result) total)] (* p (log2 p)))) results)))))
+
+(defn- values-in-column [rows col-idx]
+  "Return a map of value and its count at column ``col-idx``"
+  (reduce #(merge-with + %1 {%2 1}) {} (map #(nth % col-idx) rows)))
+
+(defn- calculate-gain [current-score set1 set2 rows scoref]
+  "Calculate the information gain of the subset over rows
+  given the scoring function ``scoref``"
+  (let [p (/ (count set1) (count rows))]
+    (- (- current-score (* p (scoref set1))) (* (- 1 p) (scoref set2)))))
+
+
+(defn buildtree [rows scoref]
+  "Build the decision tree using the given data and scoring function"
+  (cond 
+    (= 0 (count rows)) 
+      (struct-map tree-node)
+    :else 
+      (let [current-gain (struct-map gain :value (scoref rows) :criteria nil :sets nil)
+            column-count (dec (first rows))
+            column-values-set (map #(values-in-column rows %) (range 0 column-count))]
+        ())))
+
+
+
+
 
