@@ -1,8 +1,7 @@
 (ns pci-clj.decisiontree
   (:use [pci-clj.core]))
 
-(defstruct criterion :column :value)
-(defstruct tree-node :criterion :results :tb :fb)
+(defstruct tree-node :criteria :results :tb :fb)
 (defstruct gain :value :criteria :sets)
 
 (defn divideset [rows column target-value]
@@ -56,8 +55,28 @@
   "Calculate the information gain of the subset over rows
   given the scoring function ``scoref``"
   (let [p (/ (count set1) (count rows))]
-    (- (- current-score (* p (scoref set1))) (* (- 1 p) (scoref set2)))))
+    (- current-score (* p (scoref set1)) (* (- 1 p) (scoref set2)))))
 
+(defn- best-gain-in-column-values [col-idx col-values rows current-best-gain scoref current-score]
+  (cond (= (count col-values) 0) current-best-gain
+        :else (let [value (keys col-values)
+                   dividedset (divideset rows col-idx value)
+                   set1 (first dividedset)
+                   set2 (last dividedset)
+                   gain-val (calculate-gain current-score set1 set2 rows scoref)]
+                (if (and (> gain-val (:value current-best-gain)) (not (empty? set1)) (not (empty? set2)))
+                  (recur col-idx (rest col-values) rows (struct-map gain :value gain-val :criteria '(col-idx value) :sets '(set1 set2)) scoref current-score)
+                  (recur col-idx (rest col-values) rows current-best-gain scoref current-score)))))
+
+(defn- best-gain [col-idxs rows scoref current-best-gain current-score]
+  "Calculate the best information gain."
+  (cond (= (count col-idxs) 0) current-best-gain
+        :else (let [col-idx (first col-idxs)
+                   col-values (values-in-column rows col-idx)
+                   best-gain (best-gain-in-column-values col-idx col-values rows current-best-gain scoref current-score)]
+                (if (> (:value best-gain) (:value current-best-gain))
+                  (recur (rest col-idxs) rows scoref best-gain current-score)
+                  (recur (rest col-idxs) rows scoref current-best-gain current-score)))))
 
 (defn buildtree [rows scoref]
   "Build the decision tree using the given data and scoring function"
@@ -65,12 +84,18 @@
     (= 0 (count rows)) 
       (struct-map tree-node)
     :else 
-      (let [current-gain (struct-map gain :value (scoref rows) :criteria nil :sets nil)
-            column-count (dec (first rows))
-            column-values-set (map #(values-in-column rows %) (range 0 column-count))]
-        ())))
-
-
-
-
+      (let [col-idxs (range 0 (dec (count (first rows))))
+            current-score (scoref rows)
+            current-best-gain (best-gain
+                                col-idxs
+                                rows
+                                scoref
+                                (struct-map gain :value current-score :criteria nil :sets nil)
+                                current-score)]
+        (if (> (:value current-best-gain) 0)
+          (let [sets (:sets current-best-gain)
+                true-branch (buildtree (first sets) scoref)
+                false-branch (buildtree (last sets) scoref)]
+            (struct-map tree-node :criteria (:criteria current-best-gain) :tb true-branch :fb false-branch))
+          (struct-map tree-node :results (uniquecounts rows))))))
 

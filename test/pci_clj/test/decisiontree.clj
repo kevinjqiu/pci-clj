@@ -96,7 +96,13 @@
       (is (= (get result 1) 2))
       (is (= (get result 2) 1)))))
 
-      
+;(use 'clojure.inspector)
+;(deftest buildtree-test
+;  (inspect-tree (buildtree *test-data* entropy)))
+
+(print (buildtree *test-data* gini-impurity))
+
+
 
 
 
