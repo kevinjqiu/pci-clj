@@ -97,8 +97,7 @@
       (is (contains? result 2)))))
 
 ;(use 'clojure.inspector)
-;(deftest buildtree-test
-;  (inspect-tree (buildtree *test-data* entropy)))
+;(inspect-tree (buildtree *test-data* entropy))
 
-(print (buildtree *test-data* entropy))
+(print (buildtree *test-data* gini-impurity))
 

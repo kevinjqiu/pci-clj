@@ -15,6 +15,7 @@
                    #(= (nth % column) target-value))]
     (bisect rows split-fn)))
 
+; XXX: consider using ``frequencies``
 (defn uniquecounts [rows]
   "Return a map of results and their counts.
   The result is assumed to be the last column of a row"
@@ -54,10 +55,6 @@
 (defn- calculate-gain [current-score set1 set2 rows scoref]
   "Calculate the information gain of the subset over rows
   given the scoring function ``scoref``"
-  ;(println "score" current-score)
-  ;(println "set1" set1)
-  ;(println "set2" set2)
-  ;(println "rows" rows)
   (let [p (/ (count set1) (count rows))]
     (- current-score (* p (scoref set1)) (* (- 1 p) (scoref set2)))))
 
@@ -68,12 +65,8 @@
                    set1 (first dividedset)
                    set2 (last dividedset)
                    gain-val (calculate-gain current-score set1 set2 rows scoref)]
-                ;(println "rows:" rows)
-                ;(println "col-idx:" col-idx)
-                (println "value:" value)
-                (println "gain-val:" gain-val)
                 (if (and (> gain-val (:value current-best-gain)) (not (empty? set1)) (not (empty? set2)))
-                  (recur col-idx (rest col-values) rows (struct-map gain :value gain-val :criteria '(col-idx value) :sets '(set1 set2)) scoref current-score)
+                  (recur col-idx (rest col-values) rows (struct-map gain :value gain-val :criteria (list col-idx value) :sets (list set1 set2)) scoref current-score)
                   (recur col-idx (rest col-values) rows current-best-gain scoref current-score)))))
 
 (defn- best-gain [col-idxs rows scoref current-best-gain current-score]
@@ -82,24 +75,21 @@
         :else (let [col-idx (first col-idxs)
                    col-values (values-in-column rows col-idx)
                    best-gain (best-gain-in-column-values col-idx col-values rows current-best-gain scoref current-score)]
-                (println "best-gain:" best-gain)
                 (if (> (:value best-gain) (:value current-best-gain))
                   (recur (rest col-idxs) rows scoref best-gain current-score)
                   (recur (rest col-idxs) rows scoref current-best-gain current-score)))))
 
 (defn buildtree [rows scoref]
   "Build the decision tree using the given data and scoring function"
-  (cond 
-    (= 0 (count rows)) 
-      (struct-map tree-node)
-    :else 
-      (let [col-idxs (range 0 (dec (count (first rows))))
+  (if (= 0 (count rows)) 
+    (struct-map tree-node)
+    (let [col-idxs (range 0 (dec (count (first rows))))
             current-score (scoref rows)
             current-best-gain (best-gain
                                 col-idxs
                                 rows
                                 scoref
-                                (struct-map gain :value current-score :criteria nil :sets nil)
+                                (struct-map gain :value 0.0 :criteria nil :sets nil)
                                 current-score)]
         (if (> (:value current-best-gain) 0)
           (let [sets (:sets current-best-gain)
