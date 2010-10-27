@@ -102,7 +102,7 @@
 
 (deftest permutations-one-elem
   (let [result (permutations [1])]
-    (is (= [1] result))))
+    (is (= '(1 1) result))))
 
 (deftest permutations-two-elems
   (let [result (permutations [1 2])]

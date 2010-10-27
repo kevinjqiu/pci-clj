@@ -16,7 +16,7 @@
   "Generate a collection of permutations of elements in coll.
   The coll must be ordered (if it has to be a set, use ordered-set"
   (cond (= (count coll) 0) '()
-        (= (count coll) 1) coll
+        (= (count coll) 1) (list (list (first coll) (first coll)))
         :else
           (for [e1 coll e2 (remove #(= % e1) coll)]
            (list e1 e2))))
